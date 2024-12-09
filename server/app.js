@@ -5,14 +5,14 @@ const connectDB = require('./config/db');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware
+
 app.use(cors());
 app.use(express.json());
 
-// Connect Database
+
 connectDB();
 
-// Routes
+
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/email', require('./routes/emailRoutes'));
 
