@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 
 const EmailSchema = new mongoose.Schema({
   sender: {
-    type: mongoose.Schema.Types.Mixed,  // Can be either ObjectId or String
+    type: mongoose.Schema.Types.Mixed, 
     required: true
   },
-  senderEmail: {  // Store the actual email address
+  senderEmail: {  
     type: String,
     required: true
   },
