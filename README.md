@@ -21,15 +21,23 @@ This project is a mail server client that allows users to send and receive email
    cd server && npm i
    cd ../client/vite-project && npm i
    ```
+
+3. **Create App Password**
+   - Sign in to your Google Account
+   - Click Security   
+   - Under Signing in to Google, click App Passwords
+   - Click Select app and choose the app you're using
+   - Click Select device and choose the device you're using
+   - Click Generate
 3. **Create a `.env` file** in the `server` directory and add the following environment variables:
    ```plaintext
-   EMAIL_HOST=<your-email-host>
-   EMAIL_PORT=<your-email-port>
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
    EMAIL_USER=<your-email-username>
-   EMAIL_PASS=<your-email-password>
-   IMAP_HOST=<your-imap-host>
-   IMAP_PORT=<your-imap-port>
-   MONGO_URI=<your-mongodb-uri>
+   EMAIL_PASS=<your-generated-app-password>
+   IMAP_HOST=imap.gmail.com
+   IMAP_PORT=993
+   MONGO_URI=mongodb://localhost:27017/mailserver
    PORT=5001
    JWT_SECRET=<your-jwt-secret>
    ```
@@ -38,6 +46,8 @@ This project is a mail server client that allows users to send and receive email
    cd server && npm start
    cd client/vite-project/ && npm run dev
    ```
+
+5. **Make sure your mongodb service is running in the background for it to be connected to the localhost**
 
 ## API Documentation
 ### Authentication
