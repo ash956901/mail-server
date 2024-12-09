@@ -3,7 +3,6 @@ const Imap = require('imap');
 const { simpleParser } = require('mailparser');
 const Email = require('../models/Email');
 
-
 const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
@@ -17,7 +16,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS
   }
 });
-
 
 const imapConfig = {
   user: process.env.EMAIL_USER,
@@ -33,7 +31,7 @@ const imapConfig = {
   authTimeout: 15000,     
 };
 
-const fetchEmailsFromIMAP = () => {
+const fetchEmailsFromIMAP = (setEmails) => {
   return new Promise((resolve, reject) => {
     let timeoutId;
     const emails = [];
@@ -114,22 +112,22 @@ const fetchEmailsFromIMAP = () => {
                     body: parsed.text || '',
                     date: parsed.date || new Date()
                   };
-                  console.log('Parsed email:', { 
-                    from: email.from,
-                    subject: email.subject,
-                    date: email.date 
+
+                  // Immediately update the state with the new email
+                  setEmails(prevEmails => {
+                    // Check for duplicates before adding
+                    const emailExists = prevEmails.some(e => e.fromEmail === email.fromEmail && e.subject === email.subject);
+                    return emailExists ? prevEmails : [email, ...prevEmails];
                   });
                   emails.push(email);
+                  completed++;
+
+                  if (completed === fetchResults.length) {
+                    cleanup('All messages processed');
+                    resolve(emails);
+                  }
                 } catch (parseError) {
                   console.error('Error processing parsed email:', parseError);
-                }
-
-                completed++;
-                console.log(`Completed ${completed} of ${fetchResults.length}`);
-                
-                if (completed === fetchResults.length) {
-                  cleanup('All messages processed');
-                  resolve(emails);
                 }
               });
             });

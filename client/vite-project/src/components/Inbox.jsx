@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { debounce } from 'lodash';
 import EmailModal from './EmailModal';
 import '../styles/Inbox.css';
 
@@ -12,37 +13,35 @@ const Inbox = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedEmail, setSelectedEmail] = useState(null);
 
-  useEffect(() => {
-    const fetchEmails = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const token = JSON.parse(localStorage.getItem('user'))?.token;
-        
-        if (!token) {
-          throw new Error('No authentication token found');
-        }
-
-        const response = await axios.get(`http://localhost:5001/api/email/inbox?page=${currentPage}&limit=10`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        setEmails(response.data.emails);
-        setTotalPages(response.data.totalPages);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
+  const fetchEmails = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const token = JSON.parse(localStorage.getItem('user'))?.token;
+      
+      if (!token) {
+        throw new Error('No authentication token found');
       }
-    };
 
-    fetchEmails();
-    const pollInterval = setInterval(fetchEmails, 30000);
-    
-    return () => clearInterval(pollInterval);
-  }, [currentPage, refreshKey]);
+      const response = await axios.get(`http://localhost:5001/api/email/inbox?page=${currentPage}&limit=10`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const sortedEmails = response.data.emails.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setEmails(sortedEmails);
+      setTotalPages(response.data.totalPages);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmails(); 
+  }, []); 
 
   const handleEmailClick = async (email) => {
     try {
@@ -74,9 +73,10 @@ const Inbox = () => {
     setSelectedEmail(null);
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = debounce(() => {
+    fetchEmails();
     setRefreshKey(prev => prev + 1);
-  };
+  }, 2000); // Debounce for 2 seconds
 
   const handleCompose = () => {
     window.location.href = '/compose';
