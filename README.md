@@ -14,11 +14,12 @@ This project is a mail server client that allows users to send and receive email
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
-   cd mailServer
+   cd mail-server
    ```
 2. **Install dependencies**:
    ```bash
-   npm install
+   cd server && npm i
+   cd ../client/vite-project && npm i
    ```
 3. **Create a `.env` file** in the `server` directory and add the following environment variables:
    ```plaintext
@@ -29,10 +30,13 @@ This project is a mail server client that allows users to send and receive email
    IMAP_HOST=<your-imap-host>
    IMAP_PORT=<your-imap-port>
    MONGO_URI=<your-mongodb-uri>
+   PORT=5001
+   JWT_SECRET=<your-jwt-secret>
    ```
-4. **Start the server**:
+4. **Start the server(Open two terminals,one for backend,one for frontend)**:
    ```bash
-   npm start
+   cd server && npm start
+   cd client/vite-project/ && npm run dev
    ```
 
 ## API Documentation
