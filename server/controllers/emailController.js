@@ -3,12 +3,11 @@ const Imap = require('imap');
 const { simpleParser } = require('mailparser');
 const Email = require('../models/Email');
 
-// Email validation helper
+
 const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
-// Configure SMTP Transport for sending emails
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
@@ -19,19 +18,19 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Configure IMAP for receiving emails
+
 const imapConfig = {
   user: process.env.EMAIL_USER,
   password: process.env.EMAIL_PASS,
-  host: 'imap.gmail.com',  // Explicitly set for Gmail
-  port: 993,              // Standard Gmail IMAP port
+  host: 'imap.gmail.com',  
+  port: 993,              
   tls: true,
   tlsOptions: { 
     rejectUnauthorized: false,
     servername: 'imap.gmail.com'
   },
-  connTimeout: 30000,     // Increased timeout to 30 seconds
-  authTimeout: 15000,     // Increased auth timeout to 15 seconds
+  connTimeout: 30000,     
+  authTimeout: 15000,     
 };
 
 const fetchEmailsFromIMAP = () => {
@@ -47,7 +46,7 @@ const fetchEmailsFromIMAP = () => {
       tls: imapConfig.tls
     });
 
-    // Set a global timeout for the entire operation
+   
     timeoutId = setTimeout(() => {
       console.log('Global IMAP timeout reached');
       cleanup('Global timeout reached');
@@ -76,7 +75,7 @@ const fetchEmailsFromIMAP = () => {
 
         console.log('Mailbox opened:', box.name);
 
-        // Search for emails from the last 3 days to reduce load
+     
         const date = new Date();
         date.setDate(date.getDate() - 3);
         const searchCriteria = ['ALL', ['SINCE', date]];
@@ -94,7 +93,7 @@ const fetchEmailsFromIMAP = () => {
             return resolve([]);
           }
 
-          // Limit to latest 10 emails for testing
+        
           const fetchResults = results.slice(-10);
           const fetch = imap.fetch(fetchResults, { bodies: '' });
           let completed = 0;
@@ -159,7 +158,7 @@ const fetchEmailsFromIMAP = () => {
       console.log('IMAP connection ended');
     });
 
-    // Connect with error handling
+  
     try {
       console.log('Initiating IMAP connection...');
       imap.connect();
@@ -175,14 +174,14 @@ exports.sendEmail = async (req, res) => {
   try {
     const { recipient, subject, body } = req.body;
 
-    // Validate recipient email
+   
     if (!isValidEmail(recipient)) {
       return res.status(400).json({ message: 'Invalid recipient email address' });
     }
 
-    // Create email record in database
+   
     const email = new Email({
-      sender: req.user._id,  // User ObjectId for sent emails
+      sender: req.user._id,  
       senderEmail: req.user.email,
       recipient,
       subject,
@@ -191,7 +190,7 @@ exports.sendEmail = async (req, res) => {
     });
     await email.save();
 
-    // Send actual email
+   
     await transporter.sendMail({
       from: req.user.email,
       to: recipient,
@@ -213,7 +212,7 @@ exports.getInbox = async (req, res) => {
   try {
     console.log('Starting inbox retrieval for user:', req.user.email);
     
-    // First, get emails from database without waiting for IMAP
+   
     const dbEmails = await Email.find({ recipient: req.user.email })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -221,7 +220,7 @@ exports.getInbox = async (req, res) => {
     
     const total = await Email.countDocuments({ recipient: req.user.email });
     
-    // Send initial response with database emails
+    
     res.json({
       emails: dbEmails,
       currentPage: page,
@@ -229,13 +228,13 @@ exports.getInbox = async (req, res) => {
       isSync: false
     });
 
-    // Then fetch IMAP emails in the background
+  
     try {
       console.log('Fetching IMAP emails...');
       const imapEmails = await fetchEmailsFromIMAP();
       console.log('IMAP emails fetched:', imapEmails.length);
       
-      // Store new emails in database
+    
       for (const email of imapEmails) {
         try {
           const existingEmail = await Email.findOne({
@@ -262,7 +261,7 @@ exports.getInbox = async (req, res) => {
       }
     } catch (imapError) {
       console.error('IMAP sync error:', imapError);
-      // Don't throw the error since we already sent the initial response
+     
     }
   } catch (error) {
     console.error('Get inbox error:', error);
@@ -277,7 +276,7 @@ exports.getEmail = async (req, res) => {
       return res.status(404).json({ message: 'Email not found' });
     }
 
-    // Update read status
+   
     if (!email.isRead) {
       email.isRead = true;
       email.readAt = new Date();
@@ -300,7 +299,7 @@ exports.markAsRead = async (req, res) => {
       return res.status(404).json({ message: 'Email not found' });
     }
 
-    // Only mark as read if it hasn't been read yet
+
     if (!email.isRead) {
       email.isRead = true;
       email.readAt = new Date();
