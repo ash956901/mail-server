@@ -1,0 +1,28 @@
+server/node_modules/
+server/package-lock.json
+server/.env
+
+client/vite-project/node_modules/
+client/vite-project/package-lock.json
+client/vite-project/.env
+
+
+.env
+node_modules
+/node_modules
+
+
+
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+
+# macOS files
+.DS_Store
+
+# IDE specific files
+.idea/
+.vscode/
