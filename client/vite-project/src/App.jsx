@@ -5,7 +5,7 @@ import Register from './components/Register.jsx';
 import Compose from './components/Compose.jsx';
 import Inbox from './components/Inbox.jsx';
 
-// Simple auth check (you'd want a more robust solution in production)
+
 const PrivateRoute = ({ children }) => {
   const user = localStorage.getItem('user');
   return user ? children : <Navigate to="/login" replace />;
